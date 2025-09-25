@@ -1,0 +1,89 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+flutter_export_environment.sh
+
+# Flutter build outputs (Android)
+android/app/debug
+android/app/profile
+android/app/release
+
+# Android related
+android/.gradle/
+android/captures/
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/key.properties
+
+# iOS and macOS related
+**/Flutter/App.framework
+**/Flutter/Flutter.framework
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_export_environment.sh
+**/ServiceDefinitions.json
+**/Runner/GeneratedPluginRegistrant.*
+**/Flutter/ephemeral/
+**/Pods/
+**/Podfile.lock
+**/Runner.xcworkspace/
+**/xcuserdata/
+**/DerivedData/
+**/.generated/
+
+# Xcode specific
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+
+# macOS specific
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows
+windows/flutter/ephemeral/
+
+# Linux
+linux/flutter/ephemeral/
+
+# Web
+lib/generated_plugin_registrant.dart
+
+# Firebase/Google Services (keep in secrets manager or CI)
+**/GoogleService-Info.plist
+**/google-services.json
+.firebase/
+
+# Symbolication
+app.*.symbols
+
+# Obfuscation
+app.*.map.json
