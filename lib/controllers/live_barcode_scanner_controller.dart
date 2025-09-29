@@ -74,10 +74,10 @@ class LiveBarcodeScannerController extends GetxController {
         orElse: () => cameras.first,
       );
 
-      // Try different configurations based on platform
+      // Use high resolution for better quality like native camera app
       _cameraController = CameraController(
         backCamera,
-        ResolutionPreset.low, // Use lower resolution to avoid memory issues
+        ResolutionPreset.veryHigh, // Use highest resolution for native camera quality
         enableAudio: false,
         imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888,
       );
