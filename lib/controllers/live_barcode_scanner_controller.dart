@@ -12,6 +12,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 
 class LiveBarcodeScannerController extends GetxController {
   // Dependencies
@@ -22,13 +23,15 @@ class LiveBarcodeScannerController extends GetxController {
   // Observable state
   final RxBool isInitialized = false.obs;
   final RxBool isProcessing = false.obs;
-  final RxBool isStreamActive = false.obs;
+  final RxBool isCaptureActive = false.obs;
   final RxInt scannedCount = 0.obs;
   final RxString statusMessage = 'جاري تهيئة الكاميرا...'.obs;
+  final RxString captureStatus = ''.obs;
 
   // Private state
   final Set<String> _processedBarcodes = {};
-  DateTime? _lastProcessTime;
+  Timer? _captureTimer;
+  Timer? _processingTimer;
 
   // Parameters
   late String selectedArea;
@@ -85,49 +88,88 @@ class LiveBarcodeScannerController extends GetxController {
       await _cameraController!.initialize();
 
       isInitialized.value = true;
-      statusMessage.value = '🔍 المسح المباشر نشط!\n\n📱 وجه الكاميرا نحو الباركود\n🔊 سيتم تشغيل الصوت عند الاكتشاف';
+      statusMessage.value = '🔍 المسح المباشر نشط!\n\n📱 وجه الكاميرا نحو الباركود\n📸 سيتم التقاط صورة كل 5 ثوان';
 
-      // Start image stream
-      startImageStream();
+      // Start periodic image capture
+      startPeriodicCapture();
     } catch (e) {
       debugPrint('LiveBarcodeScanner - Error initializing: $e');
       statusMessage.value = 'خطأ في تهيئة الماسح: $e\n\nيرجى إعادة تشغيل التطبيق.';
     }
   }
 
-  void startImageStream() {
-    if (!isInitialized.value || _cameraController == null || isStreamActive.value) return;
+  void startPeriodicCapture() {
+    if (!isInitialized.value || _cameraController == null || isCaptureActive.value) return;
 
-    isStreamActive.value = true;
-    _cameraController!.startImageStream((CameraImage image) {
-      if (isProcessing.value || !isStreamActive.value) return;
-
-      // Throttle processing more aggressively
-      final now = DateTime.now();
-      if (_lastProcessTime != null &&
-          now.difference(_lastProcessTime!).inMilliseconds < 2000) {
+    isCaptureActive.value = true;
+    captureStatus.value = '⏳ جاري التقاط الصورة...';
+    
+    // Start immediate capture and then repeat every 5 seconds
+    _captureAndProcess();
+    _captureTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!isCaptureActive.value) {
+        timer.cancel();
         return;
       }
-      _lastProcessTime = now;
-
-      _processImageForBarcodes(image);
+      _captureAndProcess();
     });
   }
 
-  Future<void> _processImageForBarcodes(CameraImage cameraImage) async {
+  Future<void> _captureAndProcess() async {
+    if (isProcessing.value || !isInitialized.value || _cameraController == null) return;
+
+    try {
+      captureStatus.value = '📸 التقاط صورة...';
+      
+      // Capture image from camera
+      final XFile imageFile = await _cameraController!.takePicture();
+      
+      captureStatus.value = '🔍 معالجة الصورة...';
+      
+      // Convert to InputImage for ML Kit
+      final inputImage = InputImage.fromFilePath(imageFile.path);
+      
+      // Process with timeout
+      _processImageWithTimeout(inputImage);
+      
+    } catch (e) {
+      debugPrint('LiveBarcodeScanner - Error capturing image: $e');
+      captureStatus.value = '❌ خطأ في التقاط الصورة';
+      
+      // Reset status after delay
+      Future.delayed(const Duration(seconds: 2), () {
+        captureStatus.value = '';
+      });
+    }
+  }
+
+  Future<void> _processImageWithTimeout(InputImage inputImage) async {
     if (isProcessing.value) return;
 
     isProcessing.value = true;
-
+    
     try {
-      // Convert CameraImage to InputImage using the improved method
-      final inputImage = _buildInputImageFromCameraImage(cameraImage);
-      if (inputImage == null) {
-        debugPrint('Failed to create InputImage from CameraImage');
-        return;
-      }
+      // Cancel any existing processing timer
+      _processingTimer?.cancel();
+      
+      // Start 5-second timeout
+      _processingTimer = Timer(const Duration(seconds: 5), () {
+        if (isProcessing.value) {
+          debugPrint('LiveBarcodeScanner - Processing timeout after 5 seconds');
+          captureStatus.value = '⏰ انتهت مهلة المعالجة';
+          isProcessing.value = false;
+          
+          // Reset status after delay
+          Future.delayed(const Duration(seconds: 2), () {
+            captureStatus.value = '';
+          });
+        }
+      });
 
       final List<Barcode> barcodes = await _barcodeScanner.processImage(inputImage);
+      
+      // Cancel timeout timer if processing completed
+      _processingTimer?.cancel();
 
       if (barcodes.isNotEmpty) {
         for (final barcode in barcodes) {
@@ -135,6 +177,10 @@ class LiveBarcodeScannerController extends GetxController {
 
           // Check if this barcode was already processed recently
           if (_processedBarcodes.contains(barcodeText)) {
+            captureStatus.value = '🔄 باركود مكرر';
+            Future.delayed(const Duration(seconds: 2), () {
+              captureStatus.value = '';
+            });
             continue;
           }
 
@@ -147,6 +193,7 @@ class LiveBarcodeScannerController extends GetxController {
           // Play success sound
           await _playSuccessSound();
 
+          captureStatus.value = '🎯 تم اكتشاف باركود!';
           statusMessage.value = '🎯 تم اكتشاف باركود!\n\n📄 المحتوى: ${_truncateBarcodeContent(barcodeText)}\n⏳ جاري رفع البيانات تلقائياً...';
 
           // Automatically upload the barcode data
@@ -155,16 +202,22 @@ class LiveBarcodeScannerController extends GetxController {
           // Process only one barcode at a time
           break;
         }
+      } else {
+        captureStatus.value = '❌ لم يتم اكتشاف باركود';
+        Future.delayed(const Duration(seconds: 2), () {
+          captureStatus.value = '';
+        });
       }
     } catch (e) {
       debugPrint('LiveBarcodeScanner - Error processing image: $e');
-      // If we get repeated errors, try to restart the camera
-      if (e.toString().contains('IllegalArgumentException')) {
-        debugPrint('IllegalArgumentException detected, attempting to restart image stream...');
-        _restartImageStream();
-      }
+      captureStatus.value = '❌ خطأ في المعالجة';
+      
+      Future.delayed(const Duration(seconds: 2), () {
+        captureStatus.value = '';
+      });
     } finally {
       isProcessing.value = false;
+      _processingTimer?.cancel();
     }
   }
 
@@ -269,17 +322,11 @@ class LiveBarcodeScannerController extends GetxController {
     }
   }
 
-  void _restartImageStream() {
-    try {
-      stopScanning();
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (isInitialized.value && !isStreamActive.value) {
-          startImageStream();
-        }
-      });
-    } catch (e) {
-      debugPrint('Error restarting image stream: $e');
-    }
+  void stopCapture() {
+    isCaptureActive.value = false;
+    _captureTimer?.cancel();
+    _processingTimer?.cancel();
+    captureStatus.value = '';
   }
 
   // Clear processed barcode after 3 seconds to allow re-scanning
@@ -365,7 +412,8 @@ class LiveBarcodeScannerController extends GetxController {
 
       // Reset status after a delay
       Future.delayed(const Duration(seconds: 4), () {
-        statusMessage.value = '🔍 المسح المباشر نشط!\n\n📱 وجه الكاميرا نحو الباركود\n🔊 سيتم تشغيل الصوت عند الاكتشاف';
+        statusMessage.value = '🔍 المسح المباشر نشط!\n\n📱 وجه الكاميرا نحو الباركود\n📸 سيتم التقاط صورة كل 5 ثوان';
+        captureStatus.value = '';
       });
       return;
     }
@@ -422,7 +470,8 @@ class LiveBarcodeScannerController extends GetxController {
 
         // Reset status after a short delay
         Future.delayed(const Duration(seconds: 3), () {
-          statusMessage.value = '🔍 المسح المباشر نشط!\n\n📱 وجه الكاميرا نحو الباركود\n🔊 سيتم تشغيل الصوت عند الاكتشاف';
+          statusMessage.value = '🔍 المسح المباشر نشط!\n\n📱 وجه الكاميرا نحو الباركود\n📸 سيتم التقاط صورة كل 5 ثوان';
+          captureStatus.value = '';
         });
       }
     } catch (e) {
@@ -439,10 +488,7 @@ class LiveBarcodeScannerController extends GetxController {
   }
 
   void stopScanning() {
-    isStreamActive.value = false;
-    _cameraController?.stopImageStream().catchError((error) {
-      debugPrint('Error stopping image stream: $error');
-    });
+    stopCapture();
   }
 
   CameraController? get cameraController => _cameraController;

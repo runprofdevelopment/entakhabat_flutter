@@ -81,10 +81,10 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
                   child: Stack(
                     children: [
                       // Corner indicators
-                      _buildCornerIndicator(top: 0, left: 0),
-                      _buildCornerIndicator(top: 0, right: 0),
-                      _buildCornerIndicator(bottom: 0, left: 0),
-                      _buildCornerIndicator(bottom: 0, right: 0),
+                      // _buildCornerIndicator(top: 0, left: 0),
+                      // _buildCornerIndicator(top: 0, right: 0),
+                      // _buildCornerIndicator(bottom: 0, left: 0),
+                      // _buildCornerIndicator(bottom: 0, right: 0),
 
                       // Processing indicator
                       if (controller.isProcessing.value)
@@ -114,6 +114,9 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
 
           // Status Message
           _buildStatusMessage(screenWidth, screenHeight),
+
+          // Capture Status
+          _buildCaptureStatus(screenWidth, screenHeight),
         ],
       )),
     );
@@ -235,6 +238,36 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
           textAlign: TextAlign.center,
         ),
       )),
+    );
+  }
+
+  Widget _buildCaptureStatus(double screenWidth, double screenHeight) {
+    return Positioned(
+      top: screenHeight * 0.25,
+      left: screenWidth * 0.04,
+      right: screenWidth * 0.04,
+      child: Obx(() => controller.captureStatus.value.isNotEmpty
+          ? Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenWidth * 0.02,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: Text(
+                controller.captureStatus.value,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.035,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            )
+          : const SizedBox.shrink()),
     );
   }
 }
