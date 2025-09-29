@@ -312,7 +312,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       if (docSnapshot.exists) {
         final prevCollector = docSnapshot.data()?['collectorName'] ?? 'مستخدم آخر';
         setState(() {
-          _scannedBarcode = '⚠️ تحذير: هذا الباركود تم مسحه مسبقاً بواسطة $prevCollector\n\n📄 المحتوى: $barcodeContent\n🏷️ النوع: ${barcode.format}\n📊 الفئة: ${barcode.type}';
+          _scannedBarcode = '⚠️ تحذير: هذا الباركود تم مسحه مسبقاً بواسطة $prevCollector\n\n';
         });
         Get.snackbar(
           'تحذير',

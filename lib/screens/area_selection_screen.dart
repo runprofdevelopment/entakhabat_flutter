@@ -330,7 +330,8 @@ class _AreaSelectionScreenState extends State<AreaSelectionScreen> {
               child: SizedBox(
                 width: double.infinity,
                 height: screenHeight * 0.065,
-                child: Row(
+                child:
+                 Row(
                   children: [
                     Expanded(
                       child: ElevatedButton(

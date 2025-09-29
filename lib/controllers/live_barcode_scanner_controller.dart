@@ -88,7 +88,7 @@ class LiveBarcodeScannerController extends GetxController {
       await _cameraController!.initialize();
 
       isInitialized.value = true;
-      statusMessage.value = '🔍 المسح المباشر نشط!\n\n📱 وجه الكاميرا نحو الباركود\n📸 سيتم التقاط صورة كل 5 ثوان';
+      statusMessage.value = '🔍 المسح التلقائي نشط!\n\n📱 وجه الكاميرا نحو الباركود\n🤖 التقاط تلقائي كل ثانيتين';
 
       // Start periodic image capture
       startPeriodicCapture();
@@ -104,9 +104,9 @@ class LiveBarcodeScannerController extends GetxController {
     isCaptureActive.value = true;
     captureStatus.value = '⏳ جاري التقاط الصورة...';
     
-    // Start immediate capture and then repeat every 5 seconds
+    // Start immediate capture and then repeat every 2 seconds
     _captureAndProcess();
-    _captureTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _captureTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (!isCaptureActive.value) {
         timer.cancel();
         return;
@@ -146,16 +146,15 @@ class LiveBarcodeScannerController extends GetxController {
   Future<void> _processImageWithTimeout(InputImage inputImage) async {
     if (isProcessing.value) return;
 
-    isProcessing.value = true;
     
     try {
       // Cancel any existing processing timer
       _processingTimer?.cancel();
       
-      // Start 5-second timeout
-      _processingTimer = Timer(const Duration(seconds: 5), () {
+      // Start 2-second timeout
+      _processingTimer = Timer(const Duration(seconds: 2), () {
         if (isProcessing.value) {
-          debugPrint('LiveBarcodeScanner - Processing timeout after 5 seconds');
+          debugPrint('LiveBarcodeScanner - Processing timeout after 2 seconds');
           captureStatus.value = '⏰ انتهت مهلة المعالجة';
           isProcessing.value = false;
           
@@ -428,7 +427,7 @@ class LiveBarcodeScannerController extends GetxController {
 
       if (docSnapshot.exists) {
         final prevCollector = docSnapshot.data()?['collectorName'] ?? 'مستخدم آخر';
-        statusMessage.value = '⚠️ تحذير: هذا الباركود تم مسحه مسبقاً بواسطة $prevCollector\n\n📄 المحتوى: $barcodeContent';
+        statusMessage.value = '⚠️ تحذير: هذا الباركود تم مسحه مسبقاً بواسطة $prevCollector\n';
 
         Get.snackbar(
           'تحذير',
@@ -458,7 +457,7 @@ class LiveBarcodeScannerController extends GetxController {
         );
 
         scannedCount.value++;
-        statusMessage.value = '✅ تم رفع البيانات بنجاح!\n\n📄 المحتوى: ${_truncateBarcodeContent(barcodeContent)}\n📊 إجمالي المسح: ${scannedCount.value}';
+        statusMessage.value = '✅ تم رفع البيانات بنجاح!\n}\n📊 إجمالي المسح: ${scannedCount.value}';
 
         Get.snackbar(
           'نجح',
