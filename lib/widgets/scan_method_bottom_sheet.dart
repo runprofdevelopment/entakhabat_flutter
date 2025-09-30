@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../screens/barcode_scanner_screen.dart';
 import '../screens/live_barcode_scanner_screen.dart';
 
 class ScanMethodBottomSheet extends StatelessWidget {
@@ -41,7 +40,7 @@ class ScanMethodBottomSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: EdgeInsets.all(screenWidth * 0.05),
@@ -67,7 +66,7 @@ class ScanMethodBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Content - Use Expanded to prevent overflow
           Expanded(
             child: SingleChildScrollView(
@@ -87,7 +86,11 @@ class ScanMethodBottomSheet extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.person, color: Colors.blue, size: screenWidth * 0.05),
+                            Icon(
+                              Icons.person,
+                              color: Colors.blue,
+                              size: screenWidth * 0.05,
+                            ),
                             SizedBox(width: screenWidth * 0.02),
                             Expanded(
                               child: Text(
@@ -104,7 +107,11 @@ class ScanMethodBottomSheet extends StatelessWidget {
                         SizedBox(height: screenHeight * 0.01),
                         Row(
                           children: [
-                            Icon(Icons.location_on, color: Colors.green, size: screenWidth * 0.05),
+                            Icon(
+                              Icons.location_on,
+                              color: Colors.green,
+                              size: screenWidth * 0.05,
+                            ),
                             SizedBox(width: screenWidth * 0.02),
                             Expanded(
                               child: Text(
@@ -120,97 +127,23 @@ class ScanMethodBottomSheet extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
                   SizedBox(height: screenHeight * 0.03),
-                  
-                  // Scan Method Options
+
+                  // Scan Method Options (only live scan)
                   Column(
                     children: [
-                      // Manual Scan Option
-                      GestureDetector(
-                        onTap: () {
-                          Get.back();
-                          Get.to(() => BarcodeScannerScreen(
-                            selectedArea: assignedArea,
-                            collectorId: collectorId,
-                            collectorName: collectorName,
-                          ));
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(screenWidth * 0.04),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: Colors.grey[300]!),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(screenWidth * 0.025),
-                                decoration: BoxDecoration(
-                                  color: const Color.fromRGBO(225, 34, 34, 1).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.photo_camera,
-                                  color: const Color.fromRGBO(225, 34, 34, 1),
-                                  size: screenWidth * 0.06,
-                                ),
-                              ),
-                              SizedBox(width: screenWidth * 0.04),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'المسح اليدوي',
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.045,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[800],
-                                      ),
-                                    ),
-                                    SizedBox(height: screenHeight * 0.005),
-                                    Text(
-                                      'التقاط صورة ومسح الباركود',
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.035,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.grey[400],
-                                size: screenWidth * 0.04,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      
-                      SizedBox(height: screenHeight * 0.02),
-                      
                       // Live Scan Option
                       GestureDetector(
                         onTap: () {
                           Get.back();
-                          Get.to(() => LiveBarcodeScannerScreen(
-                            selectedArea: assignedArea,
-                            collectorId: collectorId,
-                            collectorName: collectorName,
-                          ));
+                          Get.to(
+                            () => LiveBarcodeScannerScreen(
+                              selectedArea: assignedArea,
+                              collectorId: collectorId,
+                              collectorName: collectorName,
+                            ),
+                          );
                         },
                         child: Container(
                           width: double.infinity,
@@ -233,7 +166,12 @@ class ScanMethodBottomSheet extends StatelessWidget {
                               Container(
                                 padding: EdgeInsets.all(screenWidth * 0.025),
                                 decoration: BoxDecoration(
-                                  color: const Color.fromRGBO(34, 139, 34, 1).withOpacity(0.1),
+                                  color: const Color.fromRGBO(
+                                    34,
+                                    139,
+                                    34,
+                                    1,
+                                  ).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
@@ -277,7 +215,7 @@ class ScanMethodBottomSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
+
                   SizedBox(height: screenHeight * 0.02),
                 ],
               ),
@@ -287,4 +225,4 @@ class ScanMethodBottomSheet extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -16,7 +16,8 @@ class LiveBarcodeScannerScreen extends StatefulWidget {
   });
 
   @override
-  State<LiveBarcodeScannerScreen> createState() => _LiveBarcodeScannerScreenState();
+  State<LiveBarcodeScannerScreen> createState() =>
+      _LiveBarcodeScannerScreenState();
 }
 
 class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
@@ -43,86 +44,89 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    final headerHeight = screenHeight * 0.15 + MediaQuery.of(context).padding.top;
+    final headerHeight =
+        screenHeight * 0.15 + MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Obx(() => Stack(
-        children: [
-          // Camera Preview
-          if (controller.isInitialized.value && controller.cameraController != null)
-            Positioned.fill(
-              child: CameraPreview(controller.cameraController!),
-            )
-          else
+      body: Obx(
+        () => Stack(
+          children: [
+            // Camera Preview
+            if (controller.isInitialized.value &&
+                controller.cameraController != null)
+              Positioned.fill(
+                child: CameraPreview(controller.cameraController!),
+              )
+            else
+              const SizedBox.shrink(),
+
+            // Scanning Overlay
             Positioned.fill(
               child: Container(
-                color: Colors.black,
-                child: const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              ),
-            ),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.3)),
+                child: Center(
+                  child: Container(
+                    width: screenWidth * 0.7,
+                    height: screenWidth * 0.7,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Corner indicators
+                        // _buildCornerIndicator(top: 0, left: 0),
+                        // _buildCornerIndicator(top: 0, right: 0),
+                        // _buildCornerIndicator(bottom: 0, left: 0),
+                        // _buildCornerIndicator(bottom: 0, right: 0),
 
-          // Scanning Overlay
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
-              ),
-              child: Center(
-                child: Container(
-                  width: screenWidth * 0.7,
-                  height: screenWidth * 0.7,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Corner indicators
-                      // _buildCornerIndicator(top: 0, left: 0),
-                      // _buildCornerIndicator(top: 0, right: 0),
-                      // _buildCornerIndicator(bottom: 0, left: 0),
-                      // _buildCornerIndicator(bottom: 0, right: 0),
-
-                      // Processing indicator
-                      if (controller.isProcessing.value)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                          ),
+                        // Processing spinner overlay (only when processing)
+                        Obx(
+                          () => controller.isProcessing.value
+                              ? Positioned.fill(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.25),
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Header
-          _buildHeader(screenWidth, screenHeight, headerHeight),
+            // Header
+            _buildHeader(screenWidth, screenHeight, headerHeight),
 
-          // Status Message
-          _buildStatusMessage(screenWidth, screenHeight),
+            // Status Message
+            _buildStatusMessage(screenWidth, screenHeight),
 
-          // Capture Status
-          _buildCaptureStatus(screenWidth, screenHeight),
-        ],
-      )),
+            // Capture Status
+            _buildCaptureStatus(screenWidth, screenHeight),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildCornerIndicator({double? top, double? bottom, double? left, double? right}) {
+  Widget _buildCornerIndicator({
+    double? top,
+    double? bottom,
+    double? left,
+    double? right,
+  }) {
     return Positioned(
       top: top,
       bottom: bottom,
@@ -133,17 +137,29 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
         height: 30,
         decoration: BoxDecoration(
           border: Border(
-            top: top != null ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
-            bottom: bottom != null ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
-            left: left != null ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
-            right: right != null ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
+            top: top != null
+                ? const BorderSide(color: Colors.white, width: 3)
+                : BorderSide.none,
+            bottom: bottom != null
+                ? const BorderSide(color: Colors.white, width: 3)
+                : BorderSide.none,
+            left: left != null
+                ? const BorderSide(color: Colors.white, width: 3)
+                : BorderSide.none,
+            right: right != null
+                ? const BorderSide(color: Colors.white, width: 3)
+                : BorderSide.none,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(double screenWidth, double screenHeight, double headerHeight) {
+  Widget _buildHeader(
+    double screenWidth,
+    double screenHeight,
+    double headerHeight,
+  ) {
     return Positioned(
       top: 0,
       left: 0,
@@ -154,10 +170,7 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withOpacity(0.7),
-              Colors.transparent,
-            ],
+            colors: [Colors.black.withOpacity(0.7), Colors.transparent],
           ),
         ),
         child: SafeArea(
@@ -183,21 +196,26 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
                         ),
                       ),
                     ),
-                    Obx(() => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${controller.scannedCount.value}',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    Obx(
+                      () => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${controller.scannedCount.value}',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                   ],
                 ),
                 SizedBox(height: screenHeight * 0.01),
@@ -221,23 +239,25 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
       bottom: screenHeight * 0.1,
       left: screenWidth * 0.04,
       right: screenWidth * 0.04,
-      child: Obx(() => Container(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.7),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.white.withOpacity(0.3)),
-        ),
-        child: Text(
-          controller.statusMessage.value,
-          style: TextStyle(
-            fontSize: screenWidth * 0.035,
-            color: Colors.white,
-            height: 1.5,
+      child: Obx(
+        () => Container(
+          padding: EdgeInsets.all(screenWidth * 0.04),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: Colors.white.withOpacity(0.3)),
           ),
-          textAlign: TextAlign.center,
+          child: Text(
+            controller.statusMessage.value,
+            style: TextStyle(
+              fontSize: screenWidth * 0.035,
+              color: Colors.white,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ),
-      )),
+      ),
     );
   }
 
@@ -246,28 +266,30 @@ class _LiveBarcodeScannerScreenState extends State<LiveBarcodeScannerScreen> {
       top: screenHeight * 0.25,
       left: screenWidth * 0.04,
       right: screenWidth * 0.04,
-      child: Obx(() => controller.captureStatus.value.isNotEmpty
-          ? Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.04,
-                vertical: screenWidth * 0.02,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
-              ),
-              child: Text(
-                controller.captureStatus.value,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+      child: Obx(
+        () => controller.captureStatus.value.isNotEmpty
+            ? Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.04,
+                  vertical: screenWidth * 0.02,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            )
-          : const SizedBox.shrink()),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                ),
+                child: Text(
+                  controller.captureStatus.value,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.035,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            : const SizedBox.shrink(),
+      ),
     );
   }
 }
